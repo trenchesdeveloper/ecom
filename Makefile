@@ -6,3 +6,6 @@ test:
 
 run: build
 	@./bin/ecom
+
+mock:
+	mockery --all --keeptree

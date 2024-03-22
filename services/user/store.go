@@ -16,7 +16,7 @@ func NewStore(db *sql.DB) *Store {
 	}
 }
 
-func (s *Store) CreateUser() error {
+func (s *Store) CreateUser(user types.User) error {
 	return nil
 }
 

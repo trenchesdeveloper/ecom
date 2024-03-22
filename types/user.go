@@ -16,16 +16,16 @@ type User struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
-	Password  string `json:"password"`
+	Password  string `json:"-"`
 	CreatedAt string `json:"createdAt"`
 }
 
 type RegisterInput struct {
-	FirstName       string `json:"firstName"`
-	LastName        string `json:"lastName"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirmPassword"`
+	FirstName       string `json:"firstName" validate:"required"`
+	LastName        string `json:"lastName" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required,min=8`
+	ConfirmPassword string `json:"confirmPassword" validate:"required,min=8`
 }
 
 func (r *RegisterInput) Sanitize() {

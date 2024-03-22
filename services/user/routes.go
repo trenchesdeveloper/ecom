@@ -1,11 +1,13 @@
 package user
 
 import (
+	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
-	go_ecom "github.com/trenchesdeveloper/go-ecom"
 	"github.com/trenchesdeveloper/go-ecom/services/auth"
 	"github.com/trenchesdeveloper/go-ecom/types"
 	"github.com/trenchesdeveloper/go-ecom/utils"
+	"log"
 	"net/http"
 )
 
@@ -42,18 +44,26 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	payload.Sanitize()
 
 	// validate input
-	if err := payload.Validate(); err != nil {
-		utils.ErrorJSON(w, err, http.StatusBadRequest)
+	if err := utils.Validate.Struct(payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.ErrorJSON(w, fmt.Errorf("invalid payload %v", errors), http.StatusBadRequest)
 		return
 	}
 
 	//check if user exists
-	_, err := h.store.GetUserByEmail(payload.Email)
+	user, err := h.store.GetUserByEmail(payload.Email)
 
-	if err == nil {
-		utils.ErrorJSON(w, go_ecom.ErrUserExists, http.StatusBadRequest)
+	if err != nil {
+		utils.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
+
+	if user != nil {
+		utils.ErrorJSON(w, fmt.Errorf("user with email %s already exists", payload.Email), http.StatusBadRequest)
+		return
+	}
+
+	log.Println("User does not exist")
 
 	// hash password
 	hashedPassword, err := auth.HashPassword(payload.Password)
@@ -61,7 +71,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
-	
+
 	}
 
 	// create user
@@ -75,5 +85,8 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("User created successfully")
+
 	utils.WriteJSON(w, http.StatusCreated, nil)
+
 }

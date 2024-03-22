@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"io"
 	"net/http"
 	"strings"
 )
+
+var Validate = validator.New()
 
 type JSONResponse struct {
 	Error   bool        `json:"error"`
