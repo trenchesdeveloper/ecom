@@ -25,7 +25,9 @@ func (a *Application) Run() error {
 
 	subrouter := router.PathPrefix("/api/v1").Subrouter()
 
-	userHandler := user.NewHandler()
+	userStore := user.NewStore(a.db)
+
+	userHandler := user.NewHandler(userStore)
 
 	userHandler.RegisterRoutes(subrouter)
 
