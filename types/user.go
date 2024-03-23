@@ -9,6 +9,7 @@ import (
 type UserStore interface {
 	CreateUser(user User) error
 	GetUserByEmail(email string) (*User, error)
+	GetUserByID(id int) (*User, error)
 }
 
 type User struct {
@@ -57,4 +58,22 @@ func validateEmail(email string) bool {
 	regex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	match, _ := regexp.MatchString(regex, email)
 	return match
+}
+
+type LoginInput struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+func (l *LoginInput) Sanitize() {
+	l.Email = strings.Trim(l.Email, " ")
+	l.Email = strings.ToLower(l.Email)
+}
+
+func (l *LoginInput) Validate() error {
+	if !validateEmail(l.Email) {
+		return go_ecom.ErrInvalidEmail
+	}
+
+	return nil
 }

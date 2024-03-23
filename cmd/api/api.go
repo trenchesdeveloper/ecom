@@ -33,5 +33,5 @@ func (a *Application) Run() error {
 
 	log.Println("Server is running on port", a.addr)
 
-	return http.ListenAndServe(a.addr, nil)
+	return http.ListenAndServe(a.addr, router)
 }
