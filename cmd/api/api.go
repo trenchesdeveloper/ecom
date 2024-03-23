@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"github.com/gorilla/mux"
+	"github.com/trenchesdeveloper/go-ecom/services/product"
 	"github.com/trenchesdeveloper/go-ecom/services/user"
 	"log"
 	"net/http"
@@ -30,6 +31,13 @@ func (a *Application) Run() error {
 	userHandler := user.NewHandler(userStore)
 
 	userHandler.RegisterRoutes(subrouter)
+
+	// product service
+	productStore := product.NewStore(a.db)
+
+	productHandler := product.NewHandler(productStore)
+
+	productHandler.RegisterRoutes(subrouter)
 
 	log.Println("Server is running on port", a.addr)
 
