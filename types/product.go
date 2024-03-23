@@ -4,6 +4,8 @@ type ProductStore interface {
 	GetProduct(id int) (*Product, error)
 	GetProducts() ([]Product, error)
 	CreateProduct(product Product) error
+	GetProductByIDs(ids []int) ([]Product, error)
+	UpdateProduct(product Product) error
 }
 
 type Product struct {
