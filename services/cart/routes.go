@@ -4,27 +4,28 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/trenchesdeveloper/go-ecom/services/auth"
 	"github.com/trenchesdeveloper/go-ecom/types"
 	"github.com/trenchesdeveloper/go-ecom/utils"
-	"log"
 	"net/http"
 )
 
 type Handler struct {
 	store        types.OrderStore
 	productStore types.ProductStore
+	userStore    types.UserStore
 }
 
-func NewHandler(store types.OrderStore, productStore types.ProductStore) *Handler {
-	return &Handler{store: store, productStore: productStore}
+func NewHandler(store types.OrderStore, productStore types.ProductStore, userStore types.UserStore) *Handler {
+	return &Handler{store: store, productStore: productStore, userStore: userStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/cart/checkout", h.handleCheckout).Methods(http.MethodPost)
+	router.HandleFunc("/cart/checkout", auth.WithJWTAuth(h.handleCheckout, h.userStore)).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
+	userID := auth.GetUserIDFromContext(r.Context())
 	var checkoutInput types.CheckoutInput
 
 	if err := utils.ParseJSON(w, r, &checkoutInput); err != nil {
@@ -59,8 +60,9 @@ func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
-	log.Printf("order created %d", orderID)
-	log.Println("total price", totalPrice)
 
-	utils.WriteJSON(w, http.StatusOK, nil)
+	utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"orderID":    orderID,
+		"totalPrice": totalPrice,
+	})
 }
